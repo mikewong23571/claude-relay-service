@@ -70,7 +70,8 @@ async function getOpenAIAuthToken(apiKeyData, sessionId = null, requestedModel =
   }
 }
 
-router.post('/responses', authenticateApiKey, async (req, res) => {
+// 创建路由处理函数
+const handleResponses = async (req, res) => {
   let upstream = null
   try {
     // 从中间件获取 API Key 数据
@@ -402,10 +403,9 @@ router.post('/responses', authenticateApiKey, async (req, res) => {
       res.status(status).json({ error: { message } })
     }
   }
-})
+}
 
-// 使用情况统计端点
-router.get('/usage', authenticateApiKey, async (req, res) => {
+const handleUsage = async (req, res) => {
   try {
     const { usage } = req.apiKey
 
@@ -427,10 +427,9 @@ router.get('/usage', authenticateApiKey, async (req, res) => {
       }
     })
   }
-})
+}
 
-// API Key 信息端点
-router.get('/key-info', authenticateApiKey, async (req, res) => {
+const handleKeyInfo = async (req, res) => {
   try {
     const keyData = req.apiKey
     res.json({
@@ -463,6 +462,16 @@ router.get('/key-info', authenticateApiKey, async (req, res) => {
       }
     })
   }
-})
+}
+
+// 注册路由 - 支持常规路径和 v1 前缀路径
+router.post('/responses', authenticateApiKey, handleResponses)
+router.post('/v1/responses', authenticateApiKey, handleResponses)
+
+router.get('/usage', authenticateApiKey, handleUsage)
+router.get('/v1/usage', authenticateApiKey, handleUsage)
+
+router.get('/key-info', authenticateApiKey, handleKeyInfo)
+router.get('/v1/key-info', authenticateApiKey, handleKeyInfo)
 
 module.exports = router
